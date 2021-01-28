@@ -10,8 +10,6 @@ function print(msg) {
 }
 
 
-
-
 //                                                              *get all notes
 function getall(req, res) {
 
@@ -20,54 +18,60 @@ function getall(req, res) {
     conn.query(squery, (err, results) => {
 
         if (err) {
-            print(err)
-        } else {
-            print(results)
+            res.send("database locked")
+        }
+        else if (results.length !== undefined && results.length > 0) {
             res.send(results)
-            print("bye bye")
+        } else {
+            // print(results)
+            res.send("wrong info")
+            // print("bye bye")
         }
     })
 }
 function search(req, res) {
 
-    if(req.body !== undefined && req.body.noteid !== undefined){
+    if (req.body !== undefined && req.body.noteid !== undefined) {
         var noteid = req.body.noteid
         var squery = "select note from notes where id=?"
-    
-        conn.query(squery,[noteid], (err, results) => {
-            if(results.length>0){
+
+        conn.query(squery, [noteid], (err, results) => {
+            if (err) {
+                res.send("database locked")
+            }
+            else if (results.length !== undefined && results.length > 0) {
                 res.send(results)
-            }else{
+            } else {
                 res.send("not found")
             }
         })
-    }else{
-        res.send("404 wrong input ")
+    } else {
+        res.send("wrong info ")
     }
 }
-//                                                                      *insert func
+//                                                      ***insert note
 function insertnote(req, res) {
-
-    if(req.body !== undefined && req.body.note !== undefined){
+    if (req.body !== undefined && req.body.note !== undefined) {
         var nts = req.body.note
         sql = "insert into notes (note) values (?);"
         conn.query(sql, [nts], (err, result) => {
             if (err) {
-                print(err)
-                res.send("404 wrong info")
+                res.send("database locked")
+            } else if (result.affectedRows !== undefined && result.affectedRows > 0) {
+                res.send("note saved")
+
             } else {
-                print(result)
-                res.send("200 ok boss")
+                res.send("wrong info")
             }
         })
-    }else{
-        res.send("wrong info")
+
     }
-
-
 }
 
+
 //                                                      ***delete note function
+
+
 
 function delnote2(req, res) {
 
@@ -75,23 +79,19 @@ function delnote2(req, res) {
         var nts = req.body.id
         sql = "delete from notes where id = ?;"
         conn.query(sql, [nts], (err, result) => {
-            // if (err) {
-            //     print(err)
-            // } else if(result.length > 0){
-            //     print(result)
-            //     res.send("note " + nts + " deleted")
+            if (err) {
+                res.send("database locked")
+            }
+            else if (result.affectedRows !== undefined && result.affectedRows === 0) {
+                res.send("failed")
+            } else {
+                res.send("Note " + nts + " Deleted")
+            }
 
-            // }else{
-            //     res.send("no file deleted")
-            // }
-            print(result.length)
         })
-        
-
     } else {
-        res.send("wrong input")
+        res.send("wrong info")
     }
-
 }
 
 
@@ -99,5 +99,5 @@ function delnote2(req, res) {
 
 
 module.exports = {
-    getall, insertnote, delnote2,search
+    getall, insertnote, delnote2, search
 }
