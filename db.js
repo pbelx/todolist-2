@@ -1,14 +1,24 @@
 //trying to keep db separate
 
-var sql = require('mysql')
+var mysql = require("mysql")
+var db_config = {
+    
+    host:"127.0.0.1",
+    user:"testa",
+    password:"testa1",
+    database:"todo",
+    connectTimeout: 10000 
+ };
 
-conn = sql.createConnection({
-    host: "127.0.0.1",
-    user: "testa",
-    password: "testa1",
-    database: "todo"
+var pool = mysql.createPool(db_config)
+pool.getConnection((err,conn)=>{
+    if(err){
+        console.log("failed login")
+    }
 })
 
-module.exports = {
-    conn
-}
+pool.on("error",(err)=>{
+    console.log("error");
+})
+
+module.exports = pool;
