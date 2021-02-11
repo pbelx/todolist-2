@@ -1,9 +1,9 @@
 //sql functions go here
-var db = require('./db'), path = require('path')
+var pool = require('./db')
 
 
 
-conn = db.conn
+// pool = db.pool
 
 function print(msg) {
     console.log(msg)
@@ -12,22 +12,19 @@ function print(msg) {
 
 //                                                              *get all notes
 function getall(req, res) {
+var query = "select * from notes"
+pool.query(query,(err,result)=>{
+    if(err){
+        res.send("db lockdown curfew")
+        // pool.destroy()
+        return
+    }
+    console.log(result)
+    res.send(result)
+    // pool.end()
+    // pool.destroy()
+})
 
-    squery = "select * from notes"
-
-    conn.query(squery, (err, results) => {
-
-        if (err) {
-            res.send("database locked")
-        }
-        else if (results.length !== undefined && results.length > 0) {
-            res.send(results)
-        } else {
-            // print(results)
-            res.send("wrong info")
-            // print("bye bye")
-        }
-    })
 }
 function search(req, res) {
 
@@ -35,7 +32,7 @@ function search(req, res) {
         var noteid = req.body.noteid
         var squery = "select note from notes where id=?"
 
-        conn.query(squery, [noteid], (err, results) => {
+        pool.query(squery, [noteid], (err, results) => {
             if (err) {
                 res.send("database locked")
             }
@@ -54,7 +51,7 @@ function insertnote(req, res) {
     if (req.body !== undefined && req.body.note !== undefined) {
         var nts = req.body.note
         sql = "insert into notes (note) values (?);"
-        conn.query(sql, [nts], (err, result) => {
+        pool.query(sql, [nts], (err, result) => {
             if (err) {
                 res.send("database locked")
             } else if (result.affectedRows !== undefined && result.affectedRows > 0) {
@@ -78,7 +75,7 @@ function delnote2(req, res) {
     if (req.body !== undefined && req.body.id !== undefined) {
         var nts = req.body.id
         sql = "delete from notes where id = ?;"
-        conn.query(sql, [nts], (err, result) => {
+        pool.query(sql, [nts], (err, result) => {
             if (err) {
                 res.send("database locked")
             }
